@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园二手交易平台</title>
+    <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1><a href="index.html">校园二手交易平台</a></h1>
+            <nav class="nav">
+                <a href="index.html" class="active">首页</a>
+                <a href="publish.html">发布商品</a>
+                <a href="orders.html">我的交易</a>
+                <a href="profile.html">个人中心</a>
+            </nav>
+            <div class="user-info" id="userInfo">
+                <span>请登录</span>
+                <a href="login.html" class="btn btn-sm btn-secondary">登录</a>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container" style="margin-top: 30px;">
+        <div class="search-bar">
+            <input type="text" id="keyword" placeholder="搜索商品名称或描述...">
+            <select id="category">
+                <option value="">全部分类</option>
+                <option value="数码产品">数码产品</option>
+                <option value="图书教材">图书教材</option>
+                <option value="生活用品">生活用品</option>
+                <option value="运动户外">运动户外</option>
+                <option value="服饰鞋包">服饰鞋包</option>
+                <option value="其他">其他</option>
+            </select>
+            <button class="btn btn-primary" onclick="loadGoods()">搜索</button>
+        </div>
+        
+        <div class="goods-grid" id="goodsGrid"></div>
+        
+        <div class="pagination" id="pagination"></div>
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 校园二手交易平台 - 让闲置物品焕发新生</p>
+        </div>
+    </footer>
+    
+    <script src="js/api.js"></script>
+    <script>
+        let currentPage = 1;
+        const pageSize = 12;
+        
+        function init() {
+            if (isLoggedIn()) {
+                const user = getUser();
+                document.getElementById('userInfo').innerHTML = `
+                    <span>${user.username}</span>
+                    ${user.role === 1 ? '<a href="statistics.html" class="btn btn-sm btn-secondary">管理后台</a>' : ''}
+                    <button class="btn btn-sm btn-secondary" onclick="handleLogout()">退出</button>
+                `;
+            }
+            loadGoods();
+        }
+        
+        function handleLogout() {
+            logout();
+            window.location.href = 'login.html';
+        }
+        
+        function loadGoods() {
+            const keyword = document.getElementById('keyword').value.trim();
+            const category = document.getElementById('category').value;
+            
+            getGoodsList(currentPage, pageSize, category, keyword).then(result => {
+                if (result.code === 0) {
+                    renderGoods(result.data.list);
+                    renderPagination(result.data.total);
+                }
+            });
+        }
+        
+        function renderGoods(list) {
+            const grid = document.getElementById('goodsGrid');
+            
+            if (list.length === 0) {
+                grid.innerHTML = '<div style="text-align: center; padding: 50px; color: #999;">暂无商品</div>';
+                return;
+            }
+            
+            grid.innerHTML = list.map(item => {
+                const images = item.images ? item.images.split(',') : [];
+                const mainImage = images.length > 0 ? images[0] : '';
+                
+                return `
+                    <div class="goods-card" onclick="goToDetail(${item.id})">
+                        <div class="image">
+                            ${mainImage ? `<img src="${mainImage}">` : '<span>暂无图片</span>'}
+                        </div>
+                        <div class="content">
+                            <div class="title">${item.name}</div>
+                            <div class="price">¥${item.price.toFixed(2)}</div>
+                            <div class="meta">
+                                <span class="category">${item.category || '其他'}</span>
+                            </div>
+                            <div class="meta" style="margin-top: 5px;">
+                                <span>${item.seller_name}</span>
+                                ${item.is_locked ? '<span class="locked-badge">锁单中</span>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderPagination(total) {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(total / pageSize);
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let html = `<a href="#" onclick="goToPage(${Math.max(1, currentPage - 1)})">上一页</a>`;
+            
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += `<span class="active">${i}</span>`;
+                } else {
+                    html += `<a href="#" onclick="goToPage(${i})">${i}</a>`;
+                }
+            }
+            
+            html += `<a href="#" onclick="goToPage(${Math.min(totalPages, currentPage + 1)})">下一页</a>`;
+            
+            pagination.innerHTML = html;
+        }
+        
+        function goToPage(page) {
+            currentPage = page;
+            loadGoods();
+        }
+        
+        function goToDetail(id) {
+            window.location.href = `detail.html?id=${id}`;
+        }
+        
+        init();
+    </script>
+</body>
+</html>
