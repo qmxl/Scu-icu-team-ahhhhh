@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 校园二手交易系统</title>
+    <style>
+        /* --- 全局样式 --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- 注册卡片容器 --- */
+        .register-container {
+            background: white;
+            width: 400px; /* 比登录页稍微宽一点点，因为内容多 */
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .register-container h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        /* --- 输入框组 --- */
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        /* 输入框聚焦时的效果 */
+        .input-group input:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        /* --- 注册按钮 --- */
+        .btn-register {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: opacity 0.3s;
+        }
+
+        .btn-register:hover {
+            opacity: 0.9;
+        }
+
+        /* --- 底部链接 --- */
+        .footer-link {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .footer-link a {
+            color: #4a90e2;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="register-container">
+        <h2>用户注册</h2>
+        
+        <!-- 注册表单 -->
+        <form id="registerForm">
+            <div class="input-group">
+                <label>用户名</label>
+                <input type="text" id="username" placeholder="请设置用户名" required>
+            </div>
+
+            <div class="input-group">
+                <label>密码</label>
+                <input type="password" id="password" placeholder="请设置密码" required>
+            </div>
+
+            <div class="input-group">
+                <label>确认密码</label>
+                <input type="password" id="confirmPassword" placeholder="请再次输入密码" required>
+            </div>
+
+            <div class="input-group">
+                <label>手机号</label>
+                <input type="tel" id="phone" placeholder="用于找回密码" pattern="[0-9]{11}" title="请输入11位手机号">
+            </div>
+
+            <button type="submit" class="btn-register">立即注册</button>
+        </form>
+
+        <div class="footer-link">
+            已有账号？ <a href="login.html">去登录</a>
+        </div>
+    </div>
+
+    <script>
+        // 简单的表单提交处理
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // 阻止默认提交，方便你后续接接口
+
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // 1. 校验两次密码是否一致
+            if (password !== confirmPassword) {
+                alert('两次输入的密码不一致，请重新输入！');
+                return;
+            }
+
+            // 2. 获取数据（这里模拟获取，实际开发中你需要发送 Ajax 请求给后端）
+            const formData = {
+                username: document.getElementById('username').value,
+                password: password,
+                phone: document.getElementById('phone').value
+            };
+
+            console.log('准备提交的数据:', formData);
+            alert('注册信息校验通过！(此处应连接后端 API)');
+            
+            // 如果你需要跳转回登录页，可以解开下面这行的注释：
+            // window.location.href = 'login.html';
+        });
+    </script>
+
+</body>
+</html>
