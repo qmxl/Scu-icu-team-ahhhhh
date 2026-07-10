@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据统计与任务中心 - 校园二手集市</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: #f7f8fa; 
+            color: #333; 
+            padding-bottom: 30px;
+        }
+        a { text-decoration: none; color: inherit; }
+
+        /* 顶部标题栏 */
+        .header {
+            background: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .back-btn { font-size: 20px; margin-right: 15px; cursor: pointer; }
+        .header-title { font-size: 18px; font-weight: bold; }
+
+        /* 快捷操作区 */
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+        }
+        .action-btn:active { opacity: 0.8; }
+        .btn-publish { background: linear-gradient(90deg, #ff9000, #ff5000); }
+        .btn-export { background: linear-gradient(90deg, #5b9bd5, #4a8bc2); }
+
+        /* 任务进度面板 */
+        .task-panel {
+            background: white;
+            margin: 0 15px 15px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 12px 15px;
+            font-size: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f5f5f5;
+            cursor: pointer;
+        }
+        .task-badge {
+            background: #ff4d4f;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        .task-list { padding: 10px 15px; }
+        
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f9f9f9;
+        }
+        .task-item:last-child { border-bottom: none; }
+        .task-info { flex: 1; }
+        .task-name { font-size: 14px; margin-bottom: 4px; }
+        .task-time { font-size: 12px; color: #999; }
+        
+        /* 任务状态标签 */
+        .status-tag {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .status-processing { background: #e6f7ff; color: #1890ff; }
+        .status-success { background: #f6ffed; color: #52c41a; }
+        .status-failed { background: #fff1f0; color: #ff4d4f; }
+
+        /* 进度条 */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #f0f2f5;
+            border-radius: 2px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #1890ff;
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        /* 任务操作按钮 */
+        .task-action {
+            font-size: 12px;
+            color: #1890ff;
+            cursor: pointer;
+            padding: 4px 8px;
+            border: 1px solid #1890ff;
+            border-radius: 4px;
+        }
+
+        /* 图表区域通用样式 */
+        .chart-section {
+            background: white;
+            margin: 0 15px 15px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .section-title { font-size: 15px; font-weight: bold; margin-bottom: 15px; }
+
+        /* 核心数据卡片 */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-card { background: #fafafa; padding: 15px; border-radius: 8px; }
+        .stat-label { font-size: 12px; color: #999; margin-bottom: 8px; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #333; }
+
+        /* 纯 CSS 柱状图 */
+        .bar-chart { display: flex; justify-content: space-between; align-items: flex-end; height: 100px; border-bottom: 1px solid #eee; padding-top: 10px; }
+        .bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; }
+        .bar { width: 20px; background: #5b9bd5; border-radius: 4px 4px 0 0; }
+        .bar-label { font-size: 10px; color: #999; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部标题 -->
+    <div class="header">
+        <a href="profile.html" class="back-btn">&lt;</a>
+        <div class="header-title">数据统计与任务</div>
+    </div>
+
+    <!-- 快捷操作区 -->
+    <div class="action-bar">
+        <button class="action-btn btn-publish" onclick="alert('触发批量发布任务！')">批量发布商品</button>
+        <button class="action-btn btn-export" onclick="alert('触发导出列表任务！')">导出商品列表</button>
+    </div>
+
+    <!-- 任务进度面板 -->
+    <div class="task-panel">
+        <div class="panel-header">
+            <span>任务进度</span>
+            <span class="task-badge">2 进行中</span>
+        </div>
+        <div class="task-list">
+            <!-- 任务 1：处理中 -->
+            <div class="task-item">
+                <div class="task-info">
+                    <div class="task-name">批量发布：二手教材 (30件)</div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 65%"></div></div>
+                    <div class="task-time">提交于 10:25 · 预计还需 1 分钟</div>
+                </div>
+                <span class="status-tag status-processing">处理中 65%</span>
+            </div>
+
+            <!-- 任务 2：已完成 -->
+            <div class="task-item">
+                <div class="task-info">
+                    <div class="task-name">导出：全部在售商品列表</div>
+                    <div class="task-time">完成于 09:15 · 文件大小 1.2 MB</div>
+                </div>
+                <span class="status-tag status-success">已完成</span>
+                <span class="task-action">下载</span>
+            </div>
+
+            <!-- 任务 3：失败 -->
+            <div class="task-item">
+                <div class="task-info">
+                    <div class="task-name">批量发布：数码产品 (15件)</div>
+                    <div class="task-time">失败于 昨天 22:10</div>
+                </div>
+                <span class="status-tag status-failed">失败</span>
+                <span class="task-action">重试</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 核心指标 -->
+    <div style="padding: 0 15px;">
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label">累计发布</div><div class="stat-value">12</div></div>
+            <div class="stat-card"><div class="stat-label">成功卖出</div><div class="stat-value">8</div></div>
+            <div class="stat-card"><div class="stat-label">总浏览量</div><div class="stat-value">342</div></div>
+            <div class="stat-card"><div class="stat-label">总收藏数</div><div class="stat-value">56</div></div>
+        </div>
+    </div>
+
+    <!-- 交易趋势 -->
+    <div class="chart-section">
+        <div class="section-title">近7日交易趋势</div>
+        <div class="bar-chart">
+            <div class="bar-col"><div class="bar" style="height: 30%"></div><div class="bar-label">一</div></div>
+            <div class="bar-col"><div class="bar" style="height: 60%"></div><div class="bar-label">二</div></div>
+            <div class="bar-col"><div class="bar" style="height: 45%"></div><div class="bar-label">三</div></div>
+            <div class="bar-col"><div class="bar" style="height: 90%"></div><div class="bar-label">四</div></div>
+            <div class="bar-col"><div class="bar" style="height: 70%"></div><div class="bar-label">五</div></div>
+            <div class="bar-col"><div class="bar" style="height: 100%"></div><div class="bar-label">六</div></div>
+            <div class="bar-col"><div class="bar" style="height: 50%"></div><div class="bar-label">日</div></div>
+        </div>
+    </div>
+
+</body>
+</html>

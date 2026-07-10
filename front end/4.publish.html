@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布闲置 - 校园二手集市</title>
+    <style>
+        /* --- 全局样式 --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #f7f8fa; 
+            color: #333; 
+            padding-bottom: 90px; /* 为底部按钮留出空间 */
+        }
+
+        /* --- 1. 顶部上传区域 (改为小正方形居中) --- */
+        .upload-section {
+            background: white;
+            width: 100%;
+            padding: 30px 0; /* 上下留白 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .upload-box {
+            width: 120px;  /* 小正方形宽度 */
+            height: 120px; /* 小正方形高度 */
+            background-color: #f5f5f5;
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+
+        .upload-box:hover {
+            border-color: #5c9ded;
+        }
+
+        .upload-icon {
+            font-size: 30px;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+
+        .upload-text {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* 隐藏实际的文件输入框 */
+        #fileInput {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* 图片预览样式 */
+        #previewImg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            display: none; /* 默认隐藏 */
+        }
+
+        /* --- 表单容器 --- */
+        .form-container {
+            padding: 20px;
+        }
+
+        /* --- 2. 中部第一行并排布局 --- */
+        .row-split {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #5c9ded;
+        }
+
+        /* --- 3. 中部大块区域 (详情描述) --- */
+        .desc-area {
+            margin-bottom: 20px;
+        }
+        
+        textarea {
+            height: 140px;
+            resize: none;
+            line-height: 1.5;
+        }
+
+        /* --- 4. 中下部区域 (联系方式) --- */
+        .contact-area {
+            margin-bottom: 30px;
+        }
+
+        /* --- 5. 页面最底端居中按钮 --- */
+        .submit-btn-wrapper {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: #5c9ded;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:active {
+            background-color: #4a8bd6;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. 顶部上传区域 (小正方形居中) -->
+    <div class="upload-section">
+        <div class="upload-box">
+            <img id="previewImg" src="" alt="预览">
+            <span class="upload-icon" id="iconPlaceholder">+</span>
+            <span class="upload-text" id="textPlaceholder">添加图片</span>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+    </div>
+
+    <div class="form-container">
+        
+        <!-- 2. 中部第一行并排布局 -->
+        <div class="row-split">
+            <div class="input-group">
+                <label>商品名称</label>
+                <input type="text" placeholder="例如：iPhone 13">
+            </div>
+            <div class="input-group">
+                <label>类别</label>
+                <select>
+                    <option value="">请选择</option>
+                    <option value="digital">数码产品</option>
+                    <option value="books">书籍教材</option>
+                    <option value="daily">生活日用</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 3. 中部大块区域 -->
+        <div class="desc-area">
+            <label>详情描述</label>
+            <textarea placeholder="请详细描述物品的成色、入手渠道、使用时长、瑕疵情况..."></textarea>
+        </div>
+
+        <!-- 4. 中下部区域 -->
+        <div class="contact-area">
+            <label>卖家联系方式</label>
+            <input type="text" placeholder="请输入微信号或手机号（必填）">
+        </div>
+
+    </div>
+
+    <!-- 5. 底部提交按钮 -->
+    <div class="submit-btn-wrapper">
+        <button class="submit-btn" onclick="alert('发布成功！')">发布闲置</button>
+    </div>
+
+    <script>
+        // 图片预览逻辑
+        const fileInput = document.getElementById('fileInput');
+        const previewImg = document.getElementById('previewImg');
+        const iconPlaceholder = document.getElementById('iconPlaceholder');
+        const textPlaceholder = document.getElementById('textPlaceholder');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    iconPlaceholder.style.display = 'none';
+                    textPlaceholder.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>

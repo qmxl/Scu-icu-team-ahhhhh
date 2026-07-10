@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园二手集市 - 首页</title>
+    <style>
+        /* --- 全局样式 --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: #f7f8fa; 
+            color: #333; 
+            /* 防止内容被底部导航遮挡 */
+            padding-bottom: 80px; 
+        }
+
+        /* --- 1. 顶部搜索栏 --- */
+        .search-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .search-input-wrapper {
+            flex: 1;
+            background: #f0f2f5;
+            border-radius: 20px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-icon {
+            width: 16px;
+            height: 16px;
+            fill: #999;
+            margin-right: 8px;
+        }
+        
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 14px;
+            width: 100%;
+            color: #333;
+        }
+
+        /* --- 2. 横向滚动分类栏 --- */
+        .category-scroll {
+            background: white;
+            padding: 10px 0;
+            white-space: nowrap; /* 禁止换行 */
+            overflow-x: auto;    /* 允许横向滚动 */
+            -webkit-overflow-scrolling: touch; /* iOS顺滑滚动 */
+            /* 隐藏滚动条但保留功能 */
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+        }
+        .category-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cat-item {
+            display: inline-block;
+            padding: 6px 16px;
+            margin: 0 4px;
+            font-size: 14px;
+            color: #666;
+            background: #f5f5f5;
+            border-radius: 16px;
+            text-decoration: none;
+        }
+        
+        /* 选中状态 */
+        .cat-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            font-weight: bold;
+        }
+
+        /* --- 3. 商品列表 (两列布局) --- */
+        .product-list {
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between; /* 两端对齐 */
+        }
+
+        .product-card {
+            width: 48.5%; /* 两列布局，留一点缝隙 */
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-img {
+            width: 100%;
+            aspect-ratio: 1/1; /* 正方形图片 */
+            object-fit: cover;
+            background-color: #eee;
+        }
+
+        .card-info {
+            padding: 8px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 14px;
+            line-height: 1.4;
+            color: #333;
+            margin-bottom: 6px;
+            
+            /* 多行省略号逻辑 (修正版) */
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            overflow: hidden;
+            height: 39.2px; /* 强制高度防止抖动 (14px * 1.4 * 2) */
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+
+        .price {
+            color: #ff4d4f;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .price span { font-size: 12px; }
+
+        .user-tag {
+            font-size: 11px;
+            color: #999;
+            display: flex;
+            align-items: center;
+        }
+        
+        .avatar {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ddd;
+            margin-right: 4px;
+        }
+
+        /* --- 4. 底部导航 (蓝色方块风格) --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+            z-index: 999;
+            border-top: 1px solid #eee;
+        }
+
+        .nav-btn {
+            flex: 1;
+            height: 40px;
+            margin: 0 4px;
+            background-color: #5b9bd5; /* 截图中的蓝色 */
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 15px;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .nav-btn:active {
+            opacity: 0.8;
+        }
+
+        /* 当前页面高亮逻辑 */
+        .nav-btn.active {
+            background-color: #4a8bc2; /* 稍微深一点表示选中 */
+            font-weight: bold;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. 顶部搜索 -->
+    <div class="search-header">
+        <div class="search-input-wrapper">
+            <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" class="search-input" placeholder="搜一下，看看有什么好货">
+        </div>
+    </div>
+
+    <!-- 2. 横向分类栏 -->
+    <div class="category-scroll">
+        <a href="#" class="cat-item active">推荐</a>
+        <a href="#" class="cat-item">教材书籍</a>
+        <a href="#" class="cat-item">数码电子</a>
+        <a href="#" class="cat-item">生活用品</a>
+        <a href="#" class="cat-item">美妆护肤</a>
+        <a href="#" class="cat-item">运动户外</a>
+        <a href="#" class="cat-item">代步工具</a>
+    </div>
+
+    <!-- 3. 商品列表 -->
+    <div class="product-list">
+        <!-- 商品卡片 1 -->
+        <div class="product-card">
+            <img src="https://via.placeholder.com/300x300/e0e0e0/888888?text=iPad" alt="商品图" class="card-img">
+            <div class="card-info">
+                <div class="card-title">出个iPad Air 4，成色很新，一直带壳贴膜使用，无划痕，送保护壳和笔</div>
+                <div class="card-meta">
+                    <div class="price"><span>¥</span>3200</div>
+                    <div class="user-tag"><div class="avatar"></div>李同学</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商品卡片 2 -->
+        <div class="product-card">
+            <img src="https://via.placeholder.com/300x300/d4edda/28a745?text=Book" alt="商品图" class="card-img">
+            <div class="card-info">
+                <div class="card-title">高等数学同济第七版上下册，九成新，笔记很少</div>
+                <div class="card-meta">
+                    <div class="price"><span>¥</span>25</div>
+                    <div class="user-tag"><div class="avatar"></div>王学长</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商品卡片 3 -->
+        <div class="product-card">
+            <img src="https://via.placeholder.com/300x300/f8d7da/dc3545?text=Lamp" alt="商品图" class="card-img">
+            <div class="card-info">
+                <div class="card-title">宿舍神器酷毙灯，磁吸的，充一次电能用很久，毕业带不走便宜出了</div>
+                <div class="card-meta">
+                    <div class="price"><span>¥</span>15</div>
+                    <div class="user-tag"><div class="avatar"></div>张室友</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商品卡片 4 -->
+        <div class="product-card">
+            <img src="https://via.placeholder.com/300x300/fff3cd/ffc107?text=Bike" alt="商品图" class="card-img">
+            <div class="card-info">
+                <div class="card-title">捷安特山地车，变速正常，刹车灵敏，送U型锁</div>
+                <div class="card-meta">
+                    <div class="price"><span>¥</span>450</div>
+                    <div class="user-tag"><div class="avatar"></div>赵骑行</div>
+                </div>
+            </div>
+        </div>
+         <!-- 商品卡片 5 -->
+         <div class="product-card">
+            <img src="https://via.placeholder.com/300x300/e2e3e5/6c757d?text=Keyboard" alt="商品图" class="card-img">
+            <div class="card-info">
+                <div class="card-title">机械键盘，红轴，手感很好，适合在宿舍打游戏或者写论文</div>
+                <div class="card-meta">
+                    <div class="price"><span>¥</span>120</div>
+                    <div class="user-tag"><div class="avatar"></div>陈极客</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 底部导航 (首页高亮) -->
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-btn active">首页</a>
+        <a href="publish.html" class="nav-btn">发布</a>
+        <a href="orders.html" class="nav-btn">交易</a>
+        <a href="profile.html" class="nav-btn">我的</a>
+    </div>
+
+</body>
+</html>
