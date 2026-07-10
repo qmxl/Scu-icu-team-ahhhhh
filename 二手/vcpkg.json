@@ -1,0 +1,12 @@
+{
+  "name": "campus-secondhand",
+  "version": "1.0.0",
+  "dependencies": [
+    "drogon",
+    "mysql-connector-c",
+    "redis-plus-plus",
+    "jwt-cpp",
+    "nlohmann-json",
+    "openssl"
+  ]
+}

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园二手交易系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏫 校园二手交易系统</h1>
+            <p>Campus Second-hand Trading System</p>
+        </header>
+
+        <nav class="menu">
+            <ul>
+                <li><a href="#home" onclick="showHome()">🏠 首页</a></li>
+                <li><a href="#products" onclick="showProducts()">📦 商品列表</a></li>
+                <li><a href="#search" onclick="showSearch()">🔍 搜索商品</a></li>
+                <li><a href="#publish" onclick="showPublish()">📤 发布商品</a></li>
+                <li><a href="#orders" onclick="showOrders()">📋 我的订单</a></li>
+                <li><a href="#favorites" onclick="showFavorites()">❤️ 我的收藏</a></li>
+                <li><a href="#profile" onclick="showProfile()">👤 个人中心</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <div id="home-section" class="section">
+                <h2>欢迎来到校园二手交易平台</h2>
+                <div class="stats">
+                    <div class="stat">
+                        <span class="number" id="product-count">0</span>
+                        <span class="label">在售商品</span>
+                    </div>
+                    <div class="stat">
+                        <span class="number" id="order-count">0</span>
+                        <span class="label">交易订单</span>
+                    </div>
+                    <div class="stat">
+                        <span class="number" id="user-count">0</span>
+                        <span class="label">注册用户</span>
+                    </div>
+                </div>
+                <h3>热门分类</h3>
+                <div id="category-list" class="category-grid"></div>
+                <h3>最新发布</h3>
+                <div id="latest-products" class="product-grid"></div>
+            </div>
+
+            <div id="products-section" class="section hidden">
+                <h2>商品列表</h2>
+                <div class="filter-bar">
+                    <select id="category-filter" onchange="filterProducts()">
+                        <option value="0">全部分类</option>
+                    </select>
+                    <select id="status-filter" onchange="filterProducts()">
+                        <option value="">全部状态</option>
+                        <option value="1">在售</option>
+                        <option value="0">已售出</option>
+                    </select>
+                    <input type="number" id="min-price" placeholder="最低价" onchange="filterProducts()">
+                    <input type="number" id="max-price" placeholder="最高价" onchange="filterProducts()">
+                </div>
+                <div id="product-list" class="product-grid"></div>
+                <div class="pagination">
+                    <button onclick="prevPage()" id="prev-btn" disabled>上一页</button>
+                    <span id="page-info">第 1 页</span>
+                    <button onclick="nextPage()" id="next-btn">下一页</button>
+                </div>
+            </div>
+
+            <div id="search-section" class="section hidden">
+                <h2>搜索商品</h2>
+                <div class="search-box">
+                    <input type="text" id="search-keyword" placeholder="输入商品名称搜索...">
+                    <button onclick="searchProducts()">搜索</button>
+                </div>
+                <div id="search-results" class="product-grid"></div>
+            </div>
+
+            <div id="publish-section" class="section hidden">
+                <h2>发布商品</h2>
+                <form id="publish-form">
+                    <div class="form-group">
+                        <label>商品名称：</label>
+                        <input type="text" id="product-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>商品描述：</label>
+                        <textarea id="product-description" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>分类：</label>
+                        <select id="product-category" required>
+                            <option value="">请选择分类</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>价格：</label>
+                        <input type="number" id="product-price" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>图片链接：</label>
+                        <input type="text" id="product-image" placeholder="输入图片URL或上传本地图片">
+                    </div>
+                    <div class="form-group">
+                        <label>成色：</label>
+                        <select id="product-condition">
+                            <option value="全新">全新</option>
+                            <option value="几乎全新">几乎全新</option>
+                            <option value="轻微使用痕迹">轻微使用痕迹</option>
+                            <option value="明显使用痕迹">明显使用痕迹</option>
+                        </select>
+                    </div>
+                    <button type="submit">发布商品</button>
+                </form>
+            </div>
+
+            <div id="orders-section" class="section hidden">
+                <h2>我的订单</h2>
+                <div class="filter-bar">
+                    <select id="order-status-filter" onchange="loadOrders()">
+                        <option value="">全部状态</option>
+                        <option value="pending">待确认</option>
+                        <option value="confirmed">已确认</option>
+                        <option value="completed">已完成</option>
+                        <option value="cancelled">已取消</option>
+                    </select>
+                    <select id="order-type" onchange="loadOrders()">
+                        <option value="buyer">我买到的</option>
+                        <option value="seller">我卖出的</option>
+                    </select>
+                </div>
+                <div id="order-list"></div>
+            </div>
+
+            <div id="favorites-section" class="section hidden">
+                <h2>我的收藏</h2>
+                <div id="favorite-list" class="product-grid"></div>
+            </div>
+
+            <div id="profile-section" class="section hidden">
+                <h2>个人中心</h2>
+                <div id="user-profile"></div>
+                <div class="profile-actions">
+                    <button onclick="showEditProfile()">编辑资料</button>
+                    <button onclick="showMyProducts()">我的商品</button>
+                    <button onclick="logout()">退出登录</button>
+                </div>
+            </div>
+
+            <div id="product-detail-modal" class="modal hidden">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal()">&times;</span>
+                    <div id="product-detail"></div>
+                </div>
+            </div>
+
+            <div id="edit-profile-modal" class="modal hidden">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal()">&times;</span>
+                    <h3>编辑个人资料</h3>
+                    <form id="edit-profile-form">
+                        <div class="form-group">
+                            <label>姓名：</label>
+                            <input type="text" id="edit-name">
+                        </div>
+                        <div class="form-group">
+                            <label>手机号：</label>
+                            <input type="text" id="edit-phone">
+                        </div>
+                        <div class="form-group">
+                            <label>宿舍地址：</label>
+                            <input type="text" id="edit-dormitory">
+                        </div>
+                        <button type="submit">保存修改</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 校园二手交易系统 | 联系我们: support@campus-trade.com</p>
+        </footer>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
