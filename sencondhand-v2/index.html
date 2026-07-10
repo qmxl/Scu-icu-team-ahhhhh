@@ -141,7 +141,7 @@ img { max-width: 100%; display: block; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   padding: 8px 18px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600;
-  transition: var(--transition); white-space: nowrap;
+  transition: var(--transition); white-space: nowrap; border: none;
 }
 .btn-primary { background: var(--primary); color: #fff; }
 .btn-primary:hover { background: var(--primary-dark); box-shadow: var(--shadow-md); }
@@ -164,16 +164,35 @@ img { max-width: 100%; display: block; }
 
 /* ===== Auth Pages ===== */
 .auth-wrapper {
-  width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #1E3A5F 0%, #1a4971 60%, #1e5a8a 100%);
+  width: 100%; height: 100vh; position: relative; display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.auth-bg-video {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  object-fit: cover; z-index: 0;
+  min-width: 100%; min-height: 100%;
+}
+.auth-bg-cover {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+  background-size: cover; background-position: center;
+  transition: opacity 0.8s ease; opacity: 1;
+}
+.auth-bg-cover.hidden { opacity: 0; pointer-events: none; }
+.auth-overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
 }
 .auth-card {
-  background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  position: relative; z-index: 3; background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-lg);
   width: 100%; max-width: 440px; overflow: hidden; display: flex; flex-direction: column;
 }
 .auth-card-header {
-  background: linear-gradient(135deg, #1E3A5F, #1a4971);
-  padding: 36px 32px 28px; color: #fff; text-align: center;
+  padding: 36px 32px 20px; color: #fff; text-align: center;
 }
 .auth-card-header .auth-icon {
   width: 56px; height: 56px; background: rgba(255,255,255,0.12);
@@ -183,21 +202,34 @@ img { max-width: 100%; display: block; }
 .auth-card-header h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
 .auth-card-header p { font-size: 0.85rem; opacity: 0.8; }
 .auth-card-body {
-  padding: 28px 28px 32px; display: flex; flex-direction: column; gap: 16px;
+  padding: 0 28px 32px; display: flex; flex-direction: column; gap: 16px;
 }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+.form-group label { font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.9); }
 .form-input {
-  width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm); font-size: 0.9rem; transition: var(--transition); background: #F8FAFC;
+  width: 100%; padding: 12px 16px; border: 1px solid rgba(255,255,255,0.25);
+  border-radius: var(--radius-sm); font-size: 0.9rem; transition: var(--transition);
+  background: rgba(255,255,255,0.08); color: #fff;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
-.form-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.08); }
+.form-input::placeholder { color: rgba(255,255,255,0.5); }
+.form-input:focus { border-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.18); box-shadow: 0 0 0 3px rgba(255,255,255,0.08); outline: none; }
 .form-input.error { border-color: #EF4444; }
-.form-error { font-size: 0.75rem; color: #EF4444; display: none; }
+.form-error { font-size: 0.75rem; color: #FCA5A5; display: none; }
 .form-error.show { display: block; }
-.form-footer { text-align: center; font-size: 0.85rem; color: var(--text-secondary); }
-.form-footer a { color: var(--primary); font-weight: 600; cursor: pointer; }
-.form-footer a:hover { text-decoration: underline; }
+.form-footer { text-align: center; font-size: 0.85rem; color: rgba(255,255,255,0.7); }
+.form-footer a { color: #fff; font-weight: 600; cursor: pointer; text-decoration: underline; }
+.form-footer a:hover { opacity: 0.8; }
+
+.auth-wrapper .btn-primary {
+  background: rgba(255,255,255,0.2); color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  font-weight: 600; letter-spacing: 0.05em;
+}
+.auth-wrapper .btn-primary:hover {
+  background: rgba(255,255,255,0.32); box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+}
 
 /* ===== Home ===== */
 .home-grid { display: flex; flex-direction: column; }
@@ -226,6 +258,9 @@ img { max-width: 100%; display: block; }
   background: rgba(255,255,255,0.97); border-radius: 28px; padding: 10px 10px 10px 22px;
   box-shadow: 0 8px 35px rgba(0,0,0,0.3); width: 440px; max-width: 90%;
 }
+@media (max-width: 600px) {
+  .banner-video-wrap .banner-search { width: 90%; }
+}
 .banner-video-wrap .banner-search input {
   flex: 1; border: none; background: transparent; font-size: 0.95rem; outline: none; color: var(--text);
 }
@@ -237,6 +272,13 @@ img { max-width: 100%; display: block; }
 .banner-video-wrap .banner-search button:hover { background: var(--primary-dark); }
 .banner-video-wrap .banner-text h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
 .banner-video-wrap .banner-text p { font-size: 0.9rem; opacity: 0.9; }
+@media (max-width: 600px) {
+  .banner-video-wrap { height: 240px; }
+  .banner-video-wrap .banner-text { top: calc(50% - 80px); }
+  .banner-video-wrap .banner-text h1 { font-size: 1.15rem; }
+  .banner-video-wrap .banner-text p { font-size: 0.78rem; }
+  .banner-video-wrap .banner-search { top: calc(50% + 40px); width: 90%; padding: 8px 8px 8px 16px; }
+}
 .banner-video-wrap .video-cover {
   position: absolute; inset: 0; z-index: 5; background-size: cover; background-position: center;
   transition: opacity 0.5s ease;
@@ -553,6 +595,11 @@ img { max-width: 100%; display: block; }
 
 <section class="page-container auth-container" id="page-login" style="display:none">
   <div class="auth-wrapper">
+    <video class="auth-bg-video" id="authBgVideo" muted loop playsinline preload="auto" autoplay data-autoplay>
+      <source src="vedio2.mp4" type="video/mp4">
+    </video>
+    <div class="auth-bg-cover" id="authBgCover" style="background-image:url('vedio2-cover.jpg')"></div>
+    <div class="auth-overlay"></div>
     <div class="auth-card">
       <div class="auth-card-header">
         <div class="auth-icon">🔄</div>
@@ -571,6 +618,37 @@ img { max-width: 100%; display: block; }
 
 <section class="page-container auth-container" id="page-register" style="display:none">
   <div class="auth-wrapper">
+    <video class="auth-bg-video" id="authBgVideo2" muted loop playsinline preload="auto" autoplay>
+      <source src="vedio2.mp4" type="video/mp4">
+    </video>
+    <div class="auth-bg-cover" id="authBgCover2" style="background-image:url('vedio2-cover.jpg')"></div>
+    <div class="auth-overlay"></div>
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <div class="auth-icon">✨</div>
+        <h2>创建账号</h2>
+        <p>加入校园二手交易社区</p>
+      </div>
+      <form class="auth-card-body" onsubmit="handleRegister(event)">
+        <div class="form-group"><label>学号</label><input type="text" class="form-input" id="regStudentId" placeholder="请输入你的学号" required><span class="form-error" id="regStudentIdError">请输入有效的学号</span></div>
+        <div class="form-group"><label>昵称</label><input type="text" class="form-input" id="regNickname" placeholder="给自己起个名字吧" required><span class="form-error" id="regNicknameError">昵称不能为空</span></div>
+        <div class="form-group"><label>手机号</label><input type="tel" class="form-input" id="regPhone" placeholder="请输入手机号" required><span class="form-error" id="regPhoneError">请输入有效的手机号</span></div>
+        <div class="form-group"><label>密码</label><input type="password" class="form-input" id="regPassword" placeholder="至少6位密码" required><span class="form-error" id="regPasswordError">密码至少6位</span></div>
+        <div class="form-group"><label>确认密码</label><input type="password" class="form-input" id="regPassword2" placeholder="再次输入密码" required><span class="form-error" id="regPassword2Error">两次密码不一致</span></div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block">注 册</button>
+        <div class="form-footer">已有账号？<a onclick="navigate('login')">立即登录</a></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="page-container auth-container" id="page-register" style="display:none">
+  <div class="auth-wrapper">
+    <video class="auth-bg-video" id="authBgVideo2" muted loop playsinline preload="auto">
+      <source src="vedio2.mp4" type="video/mp4">
+    </video>
+    <div class="auth-bg-cover" id="authBgCover2" style="background-image:url('vedio2-cover.jpg')"></div>
+    <div class="auth-overlay"></div>
     <div class="auth-card">
       <div class="auth-card-header">
         <div class="auth-icon">✨</div>
@@ -857,6 +935,7 @@ function navigate(page, data) {
   updateSidebarAuth();
 
   if (page === 'home') renderHome();
+  else if (page === 'login' || page === 'register') initAuthVideo(page);
   else if (page === 'product-detail' && data) { renderProductDetail(data); }
   else if (page === 'chat') { renderChatList(); resetChatDetail(); }
   else if (page === 'transactions') renderTransactions('all');
@@ -1180,6 +1259,28 @@ function showToast(msg) {
   const toast = document.getElementById('toast');
   toast.textContent = msg; toast.classList.add('show');
   clearTimeout(toast._timeout); toast._timeout = setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+function initAuthVideo(page) {
+  const vidId = page === 'login' ? 'authBgVideo' : 'authBgVideo2';
+  const coverId = page === 'login' ? 'authBgCover' : 'authBgCover2';
+  const video = document.getElementById(vidId);
+  const cover = document.getElementById(coverId);
+  if (!video) return;
+  video.muted = true; video.loop = true;
+  video.setAttribute('playsinline', '');
+  video.addEventListener('loadeddata', function() {
+    video.play().catch(function() {});
+  });
+  video.addEventListener('playing', function() { cover?.classList.add('hidden'); });
+  video.addEventListener('timeupdate', function onTime() {
+    if (video.currentTime > 0.1 && cover && !cover.classList.contains('hidden')) {
+      cover.classList.add('hidden');
+      video.removeEventListener('timeupdate', onTime);
+    }
+  });
+  setTimeout(function() { cover?.classList.add('hidden'); }, 4000);
+  video.load();
 }
 
 // ===== INIT =====
