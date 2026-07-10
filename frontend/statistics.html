@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>统计分析 - 校园二手交易平台</title>
+    <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1><a href="index.html">校园二手交易平台</a></h1>
+            <nav class="nav">
+                <a href="index.html">首页</a>
+                <a href="statistics.html" class="active">统计分析</a>
+                <a href="config.html">配置管理</a>
+                <a href="profile.html">个人中心</a>
+            </nav>
+            <div class="user-info" id="userInfo">
+                <span>请登录</span>
+                <a href="login.html" class="btn btn-sm btn-secondary">登录</a>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container" style="margin-top: 30px;">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="userCount">--</div>
+                <div class="stat-label">注册用户数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="goodsCount">--</div>
+                <div class="stat-label">商品总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="transactionCount">--</div>
+                <div class="stat-label">交易总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="pendingCount">--</div>
+                <div class="stat-label">待处理交易</div>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-top: 30px;">
+            <div class="card-header">
+                <h2>月度商品发布统计</h2>
+            </div>
+            <div class="chart-container" id="goodsChart"></div>
+        </div>
+        
+        <div class="card" style="margin-top: 30px;">
+            <div class="card-header">
+                <h2>月度交易统计</h2>
+            </div>
+            <div class="chart-container" id="transactionChart"></div>
+        </div>
+        
+        <div class="card" style="margin-top: 30px;">
+            <div class="card-header">
+                <h2>商品分类统计</h2>
+            </div>
+            <div class="chart-container" id="categoryChart"></div>
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <p>© 2024 校园二手交易平台 - 让闲置物品焕发新生</p>
+        </div>
+    </footer>
+    
+    <script src="js/api.js"></script>
+    <script>
+        function init() {
+            if (!isLoggedIn()) {
+                alert('请先登录');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const user = getUser();
+            if (user.role !== 1) {
+                alert('您没有权限访问此页面');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('userInfo').innerHTML = `
+                <span>${user.username}</span>
+                <button class="btn btn-sm btn-secondary" onclick="handleLogout()">退出</button>
+            `;
+            
+            loadStatistics();
+        }
+        
+        function handleLogout() {
+            logout();
+            window.location.href = 'login.html';
+        }
+        
+        function loadStatistics() {
+            Promise.all([
+                getStatistics('overview'),
+                getStatistics('goods_monthly'),
+                getStatistics('transaction_monthly'),
+                getStatistics('category')
+            ]).then(results => {
+                if (results[0].code === 200) {
+                    const overview = results[0].data;
+                    document.getElementById('userCount').textContent = overview.user_count || 0;
+                    document.getElementById('goodsCount').textContent = overview.goods_count || 0;
+                    document.getElementById('transactionCount').textContent = overview.transaction_count || 0;
+                    document.getElementById('pendingCount').textContent = overview.pending_count || 0;
+                }
+                
+                if (results[1].code === 200) {
+                    renderBarChart('goodsChart', results[1].data, '商品发布数');
+                }
+                
+                if (results[2].code === 200) {
+                    renderBarChart('transactionChart', results[2].data, '交易数');
+                }
+                
+                if (results[3].code === 200) {
+                    renderCategoryChart('categoryChart', results[3].data);
+                }
+            });
+        }
+        
+        function renderBarChart(containerId, data, label) {
+            const container = document.getElementById(containerId);
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">暂无数据</div>';
+                return;
+            }
+            
+            const maxValue = Math.max(...data.map(d => d.value));
+            const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+            
+            container.innerHTML = `
+                <div class="bar-chart">
+                    ${data.map((item, index) => {
+                        const height = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
+                        return `
+                            <div class="bar-item">
+                                <div class="bar" style="height: ${height}%;">${item.value}</div>
+                                <div class="bar-label">${months[item.month - 1]}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        
+        function renderCategoryChart(containerId, data) {
+            const container = document.getElementById(containerId);
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">暂无数据</div>';
+                return;
+            }
+            
+            const total = data.reduce((sum, item) => sum + item.value, 0);
+            
+            container.innerHTML = `
+                <div class="category-list">
+                    ${data.map(item => {
+                        const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+                        return `
+                            <div class="category-item">
+                                <div class="category-name">${item.name}</div>
+                                <div class="category-bar">
+                                    <div class="category-fill" style="width: ${percentage}%"></div>
+                                </div>
+                                <div class="category-value">${item.value} (${percentage}%)</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        
+        init();
+    </script>
+</body>
+</html>

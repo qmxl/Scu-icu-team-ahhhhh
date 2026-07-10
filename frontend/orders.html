@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的交易 - 校园二手交易平台</title>
+    <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1><a href="index.html">校园二手交易平台</a></h1>
+            <nav class="nav">
+                <a href="index.html">首页</a>
+                <a href="publish.html">发布商品</a>
+                <a href="orders.html" class="active">我的交易</a>
+                <a href="profile.html">个人中心</a>
+            </nav>
+            <div class="user-info" id="userInfo">
+                <span>请登录</span>
+                <a href="login.html" class="btn btn-sm btn-secondary">登录</a>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container" style="margin-top: 30px;">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="loadTransactions('seller')">我是卖家</button>
+            <button class="tab-btn" onclick="loadTransactions('buyer')">我是买家</button>
+        </div>
+        
+        <div id="transactionList"></div>
+        
+        <div class="pagination" id="pagination"></div>
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <p>© 2024 校园二手交易平台 - 让闲置物品焕发新生</p>
+        </div>
+    </footer>
+    
+    <script src="js/api.js"></script>
+    <script>
+        let currentRole = 'seller';
+        let currentPage = 1;
+        const pageSize = 10;
+        
+        function init() {
+            if (!isLoggedIn()) {
+                alert('请先登录');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const user = getUser();
+            document.getElementById('userInfo').innerHTML = `
+                <span>${user.username}</span>
+                ${user.role === 1 ? '<a href="statistics.html" class="btn btn-sm btn-secondary">管理后台</a>' : ''}
+                <button class="btn btn-sm btn-secondary" onclick="handleLogout()">退出</button>
+            `;
+            
+            loadTransactions('seller');
+        }
+        
+        function handleLogout() {
+            logout();
+            window.location.href = 'login.html';
+        }
+        
+        function loadTransactions(role) {
+            currentRole = role;
+            currentPage = 1;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            getTransactionList(role, currentPage, pageSize).then(result => {
+                if (result.code === 200) {
+                    renderTransactions(result.data.list);
+                    renderPagination(result.data.total);
+                }
+            });
+        }
+        
+        function renderTransactions(list) {
+            const container = document.getElementById('transactionList');
+            
+            if (list.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 50px; color: #999;">暂无交易记录</div>';
+                return;
+            }
+            
+            container.innerHTML = list.map(item => {
+                const statusText = ['待卖家确认', '交易中', '已完成', '已取消'][item.status] || '未知';
+                const statusClass = ['status-pending', 'status-trading', 'status-done', 'status-cancel'][item.status] || '';
+                
+                let actionButtons = '';
+                if (currentRole === 'seller') {
+                    if (item.status === 0) {
+                        actionButtons = `
+                            <button class="btn btn-sm btn-primary" onclick="handleConfirm(${item.id})">确认交易</button>
+                            <button class="btn btn-sm btn-danger" onclick="handleCancel(${item.id})">拒绝申请</button>
+                        `;
+                    } else if (item.status === 1) {
+                        actionButtons = `<button class="btn btn-sm btn-primary" onclick="handleComplete(${item.id})">确认完成</button>`;
+                    }
+                } else {
+                    if (item.status === 1) {
+                        actionButtons = `<button class="btn btn-sm btn-primary" onclick="handleComplete(${item.id})">确认收货</button>`;
+                    } else if (item.status === 0) {
+                        actionButtons = `<button class="btn btn-sm btn-danger" onclick="handleCancel(${item.id})">取消申请</button>`;
+                    }
+                }
+                
+                return `
+                    <div class="card transaction-card">
+                        <div class="transaction-header">
+                            <span>交易编号：${item.id}</span>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="transaction-body">
+                            <div class="goods-info" onclick="window.location.href='detail.html?id=${item.goods_id}'">
+                                <div class="image" style="width: 100px; height: 100px;">
+                                    <img src="${item.goods_image || 'https://via.placeholder.com/100'}">
+                                </div>
+                                <div class="info">
+                                    <div class="title">${item.goods_name}</div>
+                                    <div class="price">¥${item.price.toFixed(2)}</div>
+                                    <div style="font-size: 12px; color: #999;">
+                                        ${currentRole === 'seller' ? '买家：' + item.buyer_name : '卖家：' + item.seller_name}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="transaction-meta">
+                                <div>申请时间：${item.created_at}</div>
+                                ${item.confirm_time ? '<div>确认时间：' + item.confirm_time + '</div>' : ''}
+                                ${item.complete_time ? '<div>完成时间：' + item.complete_time + '</div>' : ''}
+                                ${item.cancel_reason ? '<div>取消原因：' + item.cancel_reason + '</div>' : ''}
+                            </div>
+                        </div>
+                        ${actionButtons ? `
+                            <div class="transaction-actions">
+                                ${actionButtons}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderPagination(total) {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(total / pageSize);
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let html = `<a href="#" onclick="goToPage(${Math.max(1, currentPage - 1)})">上一页</a>`;
+            
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += `<span class="active">${i}</span>`;
+                } else {
+                    html += `<a href="#" onclick="goToPage(${i})">${i}</a>`;
+                }
+            }
+            
+            html += `<a href="#" onclick="goToPage(${Math.min(totalPages, currentPage + 1)})">下一页</a>`;
+            
+            pagination.innerHTML = html;
+        }
+        
+        function goToPage(page) {
+            currentPage = page;
+            getTransactionList(currentRole, currentPage, pageSize).then(result => {
+                if (result.code === 200) {
+                    renderTransactions(result.data.list);
+                    renderPagination(result.data.total);
+                }
+            });
+        }
+        
+        function handleConfirm(id) {
+            if (confirm('确定要确认此交易申请吗？')) {
+                confirmTransaction(id).then(result => {
+                    if (result.code === 200) {
+                        alert('确认成功');
+                        loadTransactions(currentRole);
+                    } else {
+                        alert(result.message);
+                    }
+                });
+            }
+        }
+        
+        function handleComplete(id) {
+            if (confirm('确定要完成此交易吗？')) {
+                completeTransaction(id).then(result => {
+                    if (result.code === 200) {
+                        alert('交易完成');
+                        loadTransactions(currentRole);
+                    } else {
+                        alert(result.message);
+                    }
+                });
+            }
+        }
+        
+        function handleCancel(id) {
+            const reason = prompt('请输入取消原因：');
+            if (!reason) return;
+            
+            cancelTransaction(id, reason).then(result => {
+                if (result.code === 200) {
+                    alert('取消成功');
+                    loadTransactions(currentRole);
+                } else {
+                    alert(result.message);
+                }
+            });
+        }
+        
+        init();
+    </script>
+</body>
+</html>

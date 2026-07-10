@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布商品 - 校园二手交易平台</title>
+    <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1><a href="index.html">校园二手交易平台</a></h1>
+            <nav class="nav">
+                <a href="index.html">首页</a>
+                <a href="publish.html" class="active">发布商品</a>
+                <a href="orders.html">我的交易</a>
+                <a href="profile.html">个人中心</a>
+            </nav>
+            <div class="user-info" id="userInfo">
+                <span>请登录</span>
+                <a href="login.html" class="btn btn-sm btn-secondary">登录</a>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container" style="margin-top: 30px;">
+        <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <div class="card-header">
+                <h2>发布二手商品</h2>
+            </div>
+            
+            <div class="form-group">
+                <label>商品名称 *</label>
+                <input type="text" id="name" placeholder="请输入商品名称">
+            </div>
+            
+            <div class="form-group">
+                <label>商品分类 *</label>
+                <select id="category">
+                    <option value="">请选择分类</option>
+                    <option value="数码产品">数码产品</option>
+                    <option value="图书教材">图书教材</option>
+                    <option value="生活用品">生活用品</option>
+                    <option value="运动户外">运动户外</option>
+                    <option value="服饰鞋包">服饰鞋包</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            
+            
+            
+            <div class="form-group">
+                <label>出售价格（元）*</label>
+                <input type="number" id="price" placeholder="请输入出售价格" step="0.01">
+            </div>
+            
+            <div class="form-group">
+                <label>商品描述 *</label>
+                <textarea id="description" rows="5" placeholder="请详细描述商品的情况，包括使用时间、是否有损坏等"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>商品图片（选填）</label>
+                <div class="image-upload">
+                    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                        <span>+ 上传图片</span>
+                        <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleFileUpload(this)">
+                    </div>
+                    <div id="previewImages"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="showContact"> 展示我的联系方式（手机号、QQ）
+                </label>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="handleSubmit()">发布商品</button>
+                <button class="btn btn-secondary" onclick="window.location.href='index.html'">取消</button>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <p>© 2024 校园二手交易平台 - 让闲置物品焕发新生</p>
+        </div>
+    </footer>
+    
+    <script src="js/api.js"></script>
+    <script>
+        const uploadedImages = [];
+        
+        function init() {
+            if (!isLoggedIn()) {
+                alert('请先登录');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const user = getUser();
+            document.getElementById('userInfo').innerHTML = `
+                <span>${user.username}</span>
+                ${user.role === 1 ? '<a href="statistics.html" class="btn btn-sm btn-secondary">管理后台</a>' : ''}
+                <button class="btn btn-sm btn-secondary" onclick="handleLogout()">退出</button>
+            `;
+            
+            document.getElementById('showContact').checked = true;
+        }
+        
+        function handleLogout() {
+            logout();
+            window.location.href = 'login.html';
+        }
+        
+        function handleFileUpload(input) {
+            const files = input.files;
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImages.push(e.target.result);
+                    renderPreview();
+                };
+                reader.readAsDataURL(file);
+            }
+            input.value = '';
+        }
+        
+        function renderPreview() {
+            const preview = document.getElementById('previewImages');
+            preview.innerHTML = uploadedImages.map((img, index) => `
+                <div class="preview-item">
+                    <img src="${img}">
+                    <button class="remove-btn" onclick="removeImage(${index})">×</button>
+                </div>
+            `).join('');
+        }
+        
+        function removeImage(index) {
+            uploadedImages.splice(index, 1);
+            renderPreview();
+        }
+        
+        function handleSubmit() {
+            const name = document.getElementById('name').value.trim();
+            const category = document.getElementById('category').value;
+            const price = parseFloat(document.getElementById('price').value);
+            const description = document.getElementById('description').value.trim();
+            const showContact = document.getElementById('showContact').checked;
+            
+            if (!name) {
+                alert('请输入商品名称');
+                return;
+            }
+            if (!category) {
+                alert('请选择商品分类');
+                return;
+            }
+            if (isNaN(price) || price <= 0) {
+                alert('请输入有效的价格');
+                return;
+            }
+            if (!description) {
+                alert('请输入商品描述');
+                return;
+            }
+            
+            const user = getUser();
+            const data = {
+                name,
+                category,
+                price,
+                description,
+                images: JSON.stringify(uploadedImages),
+                seller_id: user.id,
+                show_contact: showContact
+            };
+            
+            createGoods(data).then(result => {
+                if (result.code === 200) {
+                    alert('发布成功');
+                    window.location.href = 'index.html';
+                } else {
+                    alert(result.message);
+                }
+            }).catch(err => {
+                console.error(err);
+                alert('发布失败，请检查网络连接');
+            });
+        }
+        
+        init();
+    </script>
+</body>
+</html>
